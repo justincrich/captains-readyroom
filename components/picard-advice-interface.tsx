@@ -347,7 +347,7 @@ export function PicardAdviceInterface() {
               className={`rounded-lg overflow-hidden border ${borderColor} ${contentBgColor}`}
             >
               <div
-                className={`p-4 bg-[${primaryColor}] text-white font-bold flex items-center`}
+                className={`p-4 bg-[${primaryColor}] text-black font-bold flex items-center`}
               >
                 <span className={`mr-2 text-[${accentColor}]`}>&#x2022;</span>
                 {borgTheme
