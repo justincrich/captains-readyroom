@@ -1,60 +1,108 @@
-"use client"
+"use client";
 
-import type React from "react"
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings } from "lucide-react";
+import { PicardQuote } from "@/components/picard-quote";
+import { StarfieldBackground } from "@/components/starfield-background";
+import { CaptainsLog } from "@/components/captains-log";
+import { SettingsPanel } from "@/components/settings-panel";
+import { PicardResponse } from "@/components/picard-response";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Settings } from "lucide-react"
-import { PicardQuote } from "@/components/picard-quote"
-import { StarfieldBackground } from "@/components/starfield-background"
-import { CaptainsLog } from "@/components/captains-log"
-import { SettingsPanel } from "@/components/settings-panel"
-import { PicardResponse } from "@/components/picard-response"
+const STORAGE_KEY = "captainsLogEntries";
 
 export function PicardAdviceInterface() {
-  const [dilemma, setDilemma] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [response, setResponse] = useState("")
-  const [savedAdvice, setSavedAdvice] = useState<{ dilemma: string; advice: string }[]>([])
-  const [displayMode, setDisplayMode] = useState<"standard" | "night">("standard")
+  const [isLoading, setIsLoading] = useState(false);
+  const [dilemma, setDilemma] = useState("");
+  const [picardResponse, setPicardResponse] = useState("");
+  const [savedAdvice, setSavedAdvice] = useState<
+    { dilemma: string; advice: string }[]
+  >([]);
+  const [displayMode, setDisplayMode] = useState<"standard" | "night">(
+    "standard"
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!dilemma.trim()) return
+  // Load saved advice from localStorage on component mount
+  useEffect(() => {
+    const savedEntries = localStorage.getItem(STORAGE_KEY);
+    if (savedEntries) {
+      try {
+        setSavedAdvice(JSON.parse(savedEntries));
+      } catch (error) {
+        console.error("Failed to parse saved entries:", error);
+      }
+    }
+  }, []);
 
-    setIsLoading(true)
-    // Simulate response delay
-    setTimeout(() => {
-      // Mock response - in a real app, this would come from an API
-      const picardResponses = [
-        "The line must be drawn here! This far, no further! You must stand firm in your convictions and not allow others to dictate your path.",
-        "It is possible to commit no mistakes and still lose. That is not weakness, that is life. Learn from this experience and move forward.",
-        "There are times when we must face the unknown with courage and determination. This appears to be one of those times.",
-        "Things are only impossible until they're not. I suggest you approach this challenge with that perspective.",
-        "In my experience, communication is often the most important tool in resolving conflicts. Perhaps a frank discussion would serve you well.",
-      ]
-      const randomResponse = picardResponses[Math.floor(Math.random() * picardResponses.length)]
-      setResponse(randomResponse)
-      setIsLoading(false)
-    }, 2000)
-  }
+  // Save to localStorage whenever savedAdvice changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAdvice));
+  }, [savedAdvice]);
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dilemma.trim()) return;
+
+    try {
+      setIsLoading(true);
+      setPicardResponse("");
+
+      const response = await fetch("/api", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dilemma }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error("Response body is null");
+      }
+
+      // Process the stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      let done = false;
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        setIsLoading(false);
+        done = doneReading;
+        if (value) {
+          const text = decoder.decode(value);
+          setPicardResponse((prev) => prev + text);
+        }
+      }
+      setDilemma("");
+    } catch (error) {
+      console.error("Error fetching Picard's advice:", error);
+      setIsLoading(false);
+    }
+  };
 
   const saveToLog = () => {
-    if (response) {
-      setSavedAdvice([...savedAdvice, { dilemma, advice: response }])
+    if (picardResponse) {
+      setSavedAdvice([...savedAdvice, { dilemma, advice: picardResponse }]);
     }
-  }
+  };
 
   const toggleDisplayMode = () => {
-    setDisplayMode(displayMode === "standard" ? "night" : "standard")
-  }
+    setDisplayMode(displayMode === "standard" ? "night" : "standard");
+  };
 
-  const bgClass = displayMode === "standard" ? "bg-[#000820] text-white" : "bg-black text-[#acb6c4]"
+  const bgClass =
+    displayMode === "standard"
+      ? "bg-[#000820] text-white"
+      : "bg-black text-[#acb6c4]";
 
   return (
-    <div className={`min-h-screen ${bgClass} transition-colors duration-300`}>
+    <div className={`min-h-screen ${bgClass} transition-colors duration-300 `}>
       <StarfieldBackground displayMode={displayMode} />
 
       <div className="container mx-auto px-4 py-8 relative z-10">
@@ -66,12 +114,10 @@ export function PicardAdviceInterface() {
               <span className="ml-2 text-[#E0A458]">&#x2022;</span>
             </h1>
             <div className="flex items-center gap-4">
-              <PicardQuote displayMode={displayMode} />
+              <PicardQuote displayMode={displayMode} advice={picardResponse} />
               <Button
-                variant="ghost"
-                size="icon"
                 onClick={toggleDisplayMode}
-                className="text-[#5C88C6] hover:text-[#E0A458] hover:bg-[#00082030]"
+                className="h-10 w-10 text-[#5C88C6] hover:text-[#E0A458] hover:bg-[#00082030]"
               >
                 <span className="sr-only">Toggle display mode</span>
                 {displayMode === "standard" ? "🌙" : "☀️"}
@@ -83,13 +129,22 @@ export function PicardAdviceInterface() {
 
         <Tabs defaultValue="advice" className="w-full">
           <TabsList className="grid grid-cols-3 mb-8 bg-[#00082060]">
-            <TabsTrigger value="advice" className="data-[state=active]:bg-[#B5435A] data-[state=active]:text-white">
+            <TabsTrigger
+              value="advice"
+              className="data-[state=active]:bg-[#B5435A] data-[state=active]:text-white"
+            >
               Seek Advice
             </TabsTrigger>
-            <TabsTrigger value="log" className="data-[state=active]:bg-[#B5435A] data-[state=active]:text-white">
+            <TabsTrigger
+              value="log"
+              className="data-[state=active]:bg-[#B5435A] data-[state=active]:text-white"
+            >
               Captain&apos;s Log
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-[#B5435A] data-[state=active]:text-white">
+            <TabsTrigger
+              value="settings"
+              className="data-[state=active]:bg-[#B5435A] data-[state=active]:text-white"
+            >
               Ship&apos;s Computer <Settings className="w-4 h-4 ml-2" />
             </TabsTrigger>
           </TabsList>
@@ -101,7 +156,7 @@ export function PicardAdviceInterface() {
                 State your dilemma, Number One
                 <span className="ml-2 text-[#E0A458]">&#x2022;</span>
               </div>
-              <form onSubmit={handleSubmit} className="p-6">
+              <form onSubmit={handleFormSubmit} className="p-6">
                 <Textarea
                   value={dilemma}
                   onChange={(e) => setDilemma(e.target.value)}
@@ -120,8 +175,13 @@ export function PicardAdviceInterface() {
               </form>
             </div>
 
-            {(isLoading || response) && (
-              <PicardResponse isLoading={isLoading} response={response} onSave={saveToLog} displayMode={displayMode} />
+            {(isLoading || picardResponse) && (
+              <PicardResponse
+                isLoading={isLoading}
+                response={picardResponse}
+                onSave={saveToLog}
+                displayMode={displayMode}
+              />
             )}
           </TabsContent>
 
@@ -135,5 +195,5 @@ export function PicardAdviceInterface() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

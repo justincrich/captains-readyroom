@@ -1,84 +1,69 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Save } from "lucide-react"
+import React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 
 interface PicardResponseProps {
-  isLoading: boolean
-  response: string
-  onSave: () => void
-  displayMode: "standard" | "night"
+  isLoading: boolean;
+  response: string;
+  onSave: () => void;
+  displayMode: "standard" | "night";
 }
 
-export function PicardResponse({ isLoading, response, onSave, displayMode }: PicardResponseProps) {
-  const [typedResponse, setTypedResponse] = useState("")
-  const [typingIndex, setTypingIndex] = useState(0)
-
-  // Reset typing animation when response changes
-  useEffect(() => {
-    if (!isLoading && response) {
-      setTypingIndex(0)
-      setTypedResponse("")
-    }
-  }, [response, isLoading])
-
-  // Typing animation effect
-  useEffect(() => {
-    if (isLoading || !response) return
-
-    if (typingIndex < response.length) {
-      const timeout = setTimeout(() => {
-        setTypedResponse((prev) => prev + response[typingIndex])
-        setTypingIndex((prev) => prev + 1)
-      }, 30)
-
-      return () => clearTimeout(timeout)
-    }
-  }, [typingIndex, response, isLoading])
-
-  const bgClass = displayMode === "standard" ? "bg-[#00082090]" : "bg-[#00000090]"
-
-  const borderClass = displayMode === "standard" ? "border-[#5C88C6]" : "border-[#4a6a9e]"
+export function PicardResponse({
+  isLoading,
+  response,
+  onSave,
+  displayMode,
+}: PicardResponseProps) {
+  const bgClass =
+    displayMode === "standard"
+      ? "bg-[#00082090] border-[#5C88C6]"
+      : "bg-[#00000080] border-[#5C88C6]";
 
   return (
-    <div className={`rounded-lg overflow-hidden border ${borderClass} ${bgClass}`}>
-      <div className="p-4 bg-[#5C88C6] text-white font-bold flex items-center">
-        <span className="mr-2 text-[#E0A458]">&#x2022;</span>
-        Captain Picard&apos;s Counsel
-        <span className="ml-2 text-[#E0A458]">&#x2022;</span>
-      </div>
-
-      <div className="p-6 min-h-[150px] relative">
+    <Card className={`${bgClass} border rounded-lg overflow-hidden`}>
+      <CardHeader className="bg-[#B5435A] text-white font-bold">
+        <div className="flex items-center">
+          <span className="mr-2 text-[#E0A458]">&#x2022;</span>
+          Captain Picard&apos;s Wisdom
+          <span className="ml-2 text-[#E0A458]">&#x2022;</span>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-[150px]">
-            <div className="w-16 h-16 border-4 border-t-[#B5435A] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-center text-[#acb6c4]">The Captain is considering your dilemma...</p>
+          <div className="flex flex-col items-center justify-center h-32">
+            <div className="w-12 h-12 border-4 border-t-[#B5435A] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-center text-[#E0A458]">
+              Captain Picard is considering your dilemma...
+            </p>
           </div>
         ) : (
-          <div className="flex">
-            <div className="mr-4 flex-shrink-0">
-              <div className="w-12 h-12 rounded-full bg-[#B5435A] flex items-center justify-center text-white">
-                <span className="text-xl">JLP</span>
-              </div>
-            </div>
-            <div className="flex-grow">
-              <p className="mb-4">{typedResponse}</p>
-              <div className="flex justify-end">
-                <Button
-                  onClick={onSave}
-                  variant="outline"
-                  size="sm"
-                  className="text-[#5C88C6] border-[#5C88C6] hover:bg-[#5C88C620]"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save to Captain&apos;s Log
-                </Button>
-              </div>
-            </div>
+          <div className="text-lg">
+            {response.split("\n\n").map((paragraph, index) => (
+              <p key={index} className="mb-4 last:mb-0 leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
           </div>
         )}
-      </div>
-    </div>
-  )
+      </CardContent>
+      {!isLoading && response && (
+        <CardFooter className="flex justify-end p-4 border-t border-[#5C88C6]">
+          <Button
+            onClick={onSave}
+            className="bg-[#5C88C6] hover:bg-[#3A689C] text-white"
+          >
+            Save to Captain&apos;s Log
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
+  );
 }
