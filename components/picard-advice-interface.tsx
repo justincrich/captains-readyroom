@@ -54,12 +54,30 @@ export function PicardAdviceInterface() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAdvice));
   }, [savedAdvice]);
 
-  // Generate a title when we receive a new response
+  // Clear responses when settings change
   useEffect(() => {
-    if (picardResponse && !isLoading) {
+    // Only clear if there's an unsaved response
+    if (picardResponse) {
+      setPicardResponse("");
+      setResponseTitle("");
+      setResponseStardate("");
+    }
+  }, [settings]);
+
+  // Generate a title when we receive a new response, but only after streaming is complete
+  useEffect(() => {
+    // Only generate title when we have a response AND we're not loading AND streaming has finished
+    const shouldGenerateTitle =
+      picardResponse &&
+      !isLoading &&
+      !isTitleLoading &&
+      // This responseTitle check prevents regenerating the title every time picardResponse changes
+      !responseTitle;
+
+    if (shouldGenerateTitle) {
       generateTitle();
     }
-  }, [picardResponse, isLoading]);
+  }, [picardResponse, isLoading, isTitleLoading, responseTitle]);
 
   // Function to generate title
   const generateTitle = async () => {

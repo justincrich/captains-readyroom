@@ -95,7 +95,11 @@ export function PicardResponse({
           </div>
         ) : (
           <div className="prose prose-invert max-w-none">
-            <p className={borgMode ? "text-[#00FF00]" : "text-white"}>
+            <p
+              className={`${
+                borgMode ? "text-[#00FF00]" : "text-white"
+              } whitespace-pre-wrap`}
+            >
               {response}
             </p>
           </div>
