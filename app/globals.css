@@ -14,7 +14,7 @@ body {
 
 @layer base {
   :root {
-
+    --animation-duration: 0.3s;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -92,4 +92,19 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Apply animation duration to transitions throughout the app */
+.transition, 
+.transition-all, 
+.transition-colors, 
+.transition-opacity, 
+.transition-transform {
+  transition-duration: var(--animation-duration) !important;
+}
+
+/* Apply animation duration to all animate-in and animate-out */
+[data-state=open]:where([data-animation=true]):animate-in,
+[data-state=closed]:where([data-animation=true]):animate-out {
+  animation-duration: var(--animation-duration) !important;
 }
