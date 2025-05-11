@@ -1,6 +1,5 @@
 "use client";
 
-import { Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface PicardQuoteProps {
@@ -55,15 +54,16 @@ export function PicardQuote({
 
   if (!quote) return null;
 
-  const quoteClasses = borgMode
-    ? "flex items-center text-[#00FF00] italic"
+  // Determine text color based on theme
+  const textColor = borgMode
+    ? "text-[#00FF00]"
     : displayMode === "standard"
-    ? "flex items-center text-[#E0A458] italic"
-    : "flex items-center text-[#acb6c4] italic";
+    ? "text-[#E0A458]"
+    : "text-[#acb6c4]";
 
   return (
-    <div className={quoteClasses}>
-      <span className="hidden md:inline text-sm max-w-[300px] truncate">
+    <div className={`flex items-center ${textColor} italic`}>
+      <span className="hidden md:block text-sm max-w-[300px] truncate hover:max-w-[500px] hover:whitespace-normal transition-all duration-500 ease-in-out cursor-default">
         {quote}
       </span>
     </div>
