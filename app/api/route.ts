@@ -104,7 +104,7 @@ export async function POST(req: Request) {
 
     // Start the OpenAI streaming request
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-5-mini-2025-08-07",
       messages: [
         { role: "system", content: prompt },
         { role: "user", content: dilemma },

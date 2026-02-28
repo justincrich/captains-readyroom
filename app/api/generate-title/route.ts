@@ -32,7 +32,7 @@ async function generateTitle(
         }`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-5-mini-2025-08-07",
       messages: [
         {
           role: "system",

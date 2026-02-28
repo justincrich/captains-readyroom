@@ -169,9 +169,13 @@ export function PicardAdviceInterface() {
         let buffer = "";
         let fullText = "";
         let done = false;
+        let animationComplete = false;
 
         const processChunk = () => {
-          if (buffer.length === 0) return;
+          if (buffer.length === 0) {
+            animationComplete = true;
+            return;
+          }
 
           // Add one character at a time with speed based on the animation speed setting
           const char = buffer.charAt(0);
@@ -185,12 +189,13 @@ export function PicardAdviceInterface() {
             // Assuming 100 = 10ms delay, 1 = 100ms delay
             const delay = Math.max(10, 110 - settings.animationSpeed);
             setTimeout(processChunk, delay);
+          } else {
+            animationComplete = true;
           }
         };
 
         while (!done) {
           const { value, done: doneReading } = await reader.read();
-          setIsLoading(false);
           done = doneReading;
 
           if (value) {
@@ -205,10 +210,16 @@ export function PicardAdviceInterface() {
           }
         }
 
-        // Ensure all text is displayed
-        if (fullText !== picardResponse) {
-          setPicardResponse(fullText);
-        }
+        // Only set loading false after stream is complete
+        setIsLoading(false);
+
+        // Only set the full text if animation didn't complete properly
+        // Wait a brief moment to allow final animation frame
+        setTimeout(() => {
+          if (!animationComplete) {
+            setPicardResponse(fullText);
+          }
+        }, 50);
       }
 
       setDilemma("");
