@@ -19,6 +19,7 @@ export function PicardAdviceInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTitleLoading, setIsTitleLoading] = useState(false);
   const [dilemma, setDilemma] = useState("");
+  const [submittedDilemma, setSubmittedDilemma] = useState("");
   const [picardResponse, setPicardResponse] = useState("");
   const [responseTitle, setResponseTitle] = useState("");
   const [responseStardate, setResponseStardate] = useState("");
@@ -91,7 +92,7 @@ export function PicardAdviceInterface() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          dilemma,
+          dilemma: submittedDilemma,
           advice: picardResponse,
           isLocutusMode: settings.locutusMode,
         }),
@@ -125,6 +126,7 @@ export function PicardAdviceInterface() {
 
     try {
       setIsLoading(true);
+      setSubmittedDilemma(dilemma);
       setPicardResponse("");
       setResponseTitle("");
       setResponseStardate("");
@@ -233,7 +235,7 @@ export function PicardAdviceInterface() {
     if (picardResponse) {
       // Check if this exact dilemma and advice pair already exists
       const isDuplicate = savedAdvice.some(
-        (entry) => entry.dilemma === dilemma && entry.advice === picardResponse
+        (entry) => entry.dilemma === submittedDilemma && entry.advice === picardResponse
       );
 
       // Only save if it's not a duplicate
@@ -241,7 +243,7 @@ export function PicardAdviceInterface() {
         setSavedAdvice([
           ...savedAdvice,
           {
-            dilemma,
+            dilemma: submittedDilemma,
             advice: picardResponse,
             locutusMode: settings.locutusMode,
             title: responseTitle,
@@ -367,32 +369,68 @@ export function PicardAdviceInterface() {
                 <span className={`ml-2 text-[${accentColor}]`}>&#x2022;</span>
               </div>
               <form onSubmit={handleFormSubmit} className="p-6">
-                <Textarea
-                  value={dilemma}
-                  onChange={(e) => setDilemma(e.target.value)}
-                  placeholder={
-                    borgTheme
-                      ? "Specify data for Borg analysis..."
-                      : "Describe your situation requiring the Captain's wisdom..."
-                  }
-                  className={`min-h-[150px] ${
-                    borgTheme ? "bg-[#0a1a0a90]" : "bg-[#00082090]"
-                  } ${borderColor} text-white placeholder:text-gray-400 mb-4`}
-                />
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    className={`${buttonColor} text-white`}
-                    disabled={isLoading || !dilemma.trim()}
-                  >
-                    {isLoading
-                      ? borgTheme
-                        ? "Processing query..."
-                        : "The Captain is considering..."
-                      : borgTheme
-                      ? "Assimilate"
-                      : "Make it so"}
-                  </Button>
+                <div className="relative">
+                  <Textarea
+                    value={isLoading || picardResponse ? submittedDilemma : dilemma}
+                    onChange={(e) => setDilemma(e.target.value)}
+                    placeholder={
+                      borgTheme
+                        ? "Specify data for Borg analysis..."
+                        : "Describe your situation requiring the Captain's wisdom..."
+                    }
+                    disabled={isLoading || !!picardResponse}
+                    className={`min-h-[150px] ${
+                      borgTheme ? "bg-[#0a1a0a90]" : "bg-[#00082090]"
+                    } ${borderColor} text-white placeholder:text-gray-400 mb-4 ${
+                      (isLoading || picardResponse) ? "opacity-60 cursor-not-allowed" : ""
+                    }`}
+                  />
+                  {(isLoading || picardResponse) && (
+                    <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-mono ${
+                      borgTheme
+                        ? "bg-[#00FF00]/20 text-[#00FF00] border border-[#00FF00]/30"
+                        : "bg-[#5C88C6]/20 text-[#5C88C6] border border-[#5C88C6]/30"
+                    }`}>
+                      {borgTheme ? "QUERY LOCKED" : "TRANSMISSION LOCKED"}
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-between items-center">
+                  {picardResponse && !isLoading && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setDilemma("");
+                        setSubmittedDilemma("");
+                        setPicardResponse("");
+                        setResponseTitle("");
+                        setResponseStardate("");
+                      }}
+                      className={`text-sm ${
+                        borgTheme
+                          ? "text-[#00FF00]/70 hover:text-[#00FF00] hover:bg-[#00FF00]/10"
+                          : "text-[#5C88C6]/70 hover:text-[#5C88C6] hover:bg-[#5C88C6]/10"
+                      }`}
+                    >
+                      {borgTheme ? "Reset Terminal" : "New Inquiry"}
+                    </Button>
+                  )}
+                  <div className={picardResponse && !isLoading ? "" : "ml-auto"}>
+                    <Button
+                      type="submit"
+                      className={`${buttonColor} text-white`}
+                      disabled={isLoading || !!picardResponse || !dilemma.trim()}
+                    >
+                      {isLoading
+                        ? borgTheme
+                          ? "Processing query..."
+                          : "The Captain is considering..."
+                        : borgTheme
+                        ? "Assimilate"
+                        : "Make it so"}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </div>

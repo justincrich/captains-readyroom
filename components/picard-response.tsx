@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import { WarpLoader } from "@/components/warp-loader";
 
 interface PicardResponseProps {
   isLoading: boolean;
@@ -88,7 +89,7 @@ export function PicardResponse({
         className={`p-6 ${contentBgColor} ${!isLoading && title ? "pt-2" : ""}`}
       >
         {isLoading ? (
-          <p className="italic text-[#acb6c4]">{loadingText}</p>
+          <WarpLoader borgMode={borgMode} />
         ) : isTitleLoading ? (
           <div className="flex justify-center pb-2">
             <div className="h-1 w-16 bg-gray-600 rounded-full animate-pulse"></div>

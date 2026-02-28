@@ -37,12 +37,12 @@ async function generateTitle(
         {
           role: "system",
           content:
-            "You create concise, meaningful titles that capture the essence of conversations.",
+            "You create concise, meaningful titles that capture the essence of conversations. Respond with ONLY the title, no quotes or extra text.",
         },
         { role: "user", content: titlePrompt },
       ],
       temperature: 0.7,
-      max_tokens: 30,
+      max_completion_tokens: 30,
     });
 
     return (
